@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问答助手</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- ================== 侧边栏 ================== -->
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <button id="new-chat-btn"><i class="fas fa-plus"></i><span>新聊天</span></button>
+            </div>
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <p class="sidebar-section-title">快速提问</p>
+                    <div id="quick-prompts">
+                        <button class="quick-prompt-btn">流感有哪些典型症状？</button>
+                        <button class="quick-prompt-btn">如何有效预防流感？</button>
+                        <button class="quick-prompt-btn">得了流感怎么办？</button>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <p class="sidebar-section-title">知识库</p>
+                    <ul id="knowledge-base-list">
+                        <!-- 知识库文件列表会动态插入这里 -->
+                    </ul>
+                </div>
+                <div class="sidebar-section">
+                    <p class="sidebar-section-title">聊天历史</p>
+                    <ul id="history-list"></ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ================== 主聊天区 (【关键修复】恢复了所有内容) ================== -->
+        <main id="main-content">
+            <div id="chat-container">
+                <div id="chat-box">
+                    <div id="welcome-view">
+                        <div class="logo"> flu </div>
+                        <h1>有什么可以帮您的吗？</h1>
+                    </div>
+                </div>
+                <div id="input-container">
+                    <div class="input-area-wrapper">
+                        <input type="file" id="file-input" style="display: none;" accept=".doc,.docx,.pdf,.txt">
+                        <button id="upload-btn" class="input-btn" title="上传知识库文件"><i class="fas fa-plus"></i></button>
+                        <input type="text" id="user-input" placeholder="请在这里输入你的问题...">
+                        <button id="mic-btn" class="input-btn" title="语音输入"><i class="fas fa-microphone"></i></button>
+                        <button id="send-btn" class="input-btn" title="发送"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <p class="footer-text">由 Coze & Spring Boot 驱动的前端模拟版</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js" charset="UTF-8"></script>
+</body>
+</html>
