@@ -162,30 +162,84 @@
         renderHistoryList();
     }
     async function sendMessage() {
-        const question = userInput.value.trim();
-        if (!question) return;
-        if (!currentChatId) {
-            currentChatId = `chat_${Date.now()}`;
-            chatHistory[currentChatId] = { title: question.length > 20 ? question.substring(0, 20) + '...' : question, messages: [] };
-            if (welcomeView) welcomeView.classList.add('hidden');
-            renderHistoryList();
-        }
-        addMessageToHistory(question, 'user');
-        appendMessage(question, 'user');
-        userInput.value = '';
-        appendMessage('...', 'bot', true);
-        try {
-            const answer = await getMockResponse(question);
-            removeTypingIndicator();
-            addMessageToHistory(answer, 'bot');
-            appendMessage(answer, 'bot');
-            saveHistoryToStorage();
-        } catch (error) {
-            console.error('API 出错:', error);
-            removeTypingIndicator();
-            appendMessage('抱歉，服务出现了一点问题。', 'bot');
-        }
+    const question = userInput.value.trim();
+    if (!question) {
+        return; // 如果输入为空，则不执行任何操作
     }
+
+    // 1. 检查是否是新聊天，如果是，则创建
+    if (!currentChatId) {
+        currentChatId = `chat_${Date.now()}`;
+        // 使用问题的开头作为新聊天的标题
+        const title = question.length > 20 ? question.substring(0, 20) + '...' : question;
+        chatHistory[currentChatId] = { title: title, messages: [] };
+
+        // 隐藏欢迎界面并更新侧边栏历史列表
+        if (welcomeView) {
+            welcomeView.classList.add('hidden');
+        }
+        renderHistoryList();
+    }
+
+    // 2. 将用户的消息添加到历史记录和聊天框中
+    addMessageToHistory(question, 'user');
+    appendMessage(question, 'user');
+    userInput.value = ''; // 清空输入框
+
+    // 3. 显示"正在输入..."的加载动画
+    appendMessage('...', 'bot', true);
+
+    // 4. 【核心】调用后端API
+    try {
+        // 定义API地址，请确保端口号与你本地运行的后端服务一致
+        const API_URL = 'http://localhost:8080/api/ask';
+
+        // 发起fetch请求
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // 根据后端代码，我们只需要发送 question 字段
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        // 检查HTTP响应状态
+        if (!response.ok) {
+            // 如果服务器返回错误（如 404, 500），则抛出一个错误
+            throw new Error(`服务器响应错误，状态码: ${response.status}`);
+        }
+
+        // 解析后端返回的JSON数据
+        const data = await response.json();
+
+        // 从返回数据中获取答案
+        const answer = data.answer;
+
+        // 5. 成功获取到回答后，更新UI
+        removeTypingIndicator(); // 移除加载动画
+        addMessageToHistory(answer, 'bot'); // 将机器人的回答添加到历史记录
+        appendMessage(answer, 'bot'); // 将机器人的回答显示在聊天框
+        saveHistoryToStorage(); // 保存整个聊天记录到localStorage
+
+    } catch (error) {
+        console.error('API 调用出错:', error);
+        removeTypingIndicator(); // 同样需要移除加载动画
+
+        // 6. 处理可能发生的错误，并向用户显示友好的提示信息
+        let errorMessage = '抱歉，服务出现了一点问题。';
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = '无法连接到服务器。请确认后端服务是否已在 http://localhost:8080 正常运行，并检查网络连接。';
+        } else {
+            errorMessage = `与服务器通信时发生错误: ${error.message}`;
+        }
+
+        appendMessage(errorMessage, 'bot');
+        // 注意：我们不会将错误信息保存到聊天历史中
+    }
+}
     function addMessageToHistory(text, type) {
         if (chatHistory[currentChatId]) {
             chatHistory[currentChatId].messages.push({ text, type });
@@ -343,4 +397,5 @@
     // 6. 初始化
     loadHistoryFromStorage();
     loadKnowledgeBaseFromStorage();
+
 });
